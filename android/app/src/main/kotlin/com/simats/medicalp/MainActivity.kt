@@ -1,4 +1,4 @@
-package com.example.medicalp
+package com.simats.medicalp
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -47,10 +47,11 @@ class _C_videosState extends State<C_videos> {
         final description = jsonData['description'];
 
         setState(() {
+          print('http://$ip/$videoUrl');
           flickManager = FlickManager(
             videoPlayerController: VideoPlayerController.network(
               videoUrl.startsWith('uploads/') || videoUrl.startsWith('videos/')
-                  ? 'http://$ip/medproject/$videoUrl'
+                  ? 'http://$ip/$videoUrl'
                   : videoUrl,
             ),
           );

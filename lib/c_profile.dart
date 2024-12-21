@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:medicalp/c_editprofile.dart';
 import 'package:medicalp/common.dart';
-import 'package:provider/provider.dart';
 
 class C_profile extends StatefulWidget {
   final String name;
@@ -61,7 +59,6 @@ class _C_profileState extends State<C_profile> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -133,8 +130,8 @@ class _C_profileState extends State<C_profile> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => C_editprofile(
@@ -148,6 +145,14 @@ class _C_profileState extends State<C_profile> {
                       ),
                     ),
                   );
+
+                  // If result is not null, update the caretaker data
+                  if (result != null) {
+                    setState(() {
+                      caretakerData = result;
+                      caretakerImagePath = result['caretakerImage'];
+                    });
+                  }
                 },
                 child: Text(
                   'Edit',
@@ -158,7 +163,6 @@ class _C_profileState extends State<C_profile> {
                   ),
                 ),
               ),
-
             ],
           ),
         ),

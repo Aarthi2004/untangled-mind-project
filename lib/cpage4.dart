@@ -193,9 +193,9 @@ class _CPage4State extends State<CPage4> with SingleTickerProviderStateMixin {
                 padding: const EdgeInsets.only(top: 20.0),
                 child: Container(
                   width: MediaQuery.of(context).size.width,
-                  height: 180,
+                  height: 250,
                   child: CarouselSlider.builder(
-                    itemCount: 5, // Total number of images
+                    itemCount: 3, // Total number of images
                     itemBuilder: (context, index, realIndex) {
                       return Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -204,7 +204,7 @@ class _CPage4State extends State<CPage4> with SingleTickerProviderStateMixin {
                           child: Image.asset(
                             _getImagePath(index),
                             width: 327,
-                            height: 180,
+                            height: 200,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -349,27 +349,21 @@ class _CPage4State extends State<CPage4> with SingleTickerProviderStateMixin {
   String _getImagePath(int index) {
     switch (index) {
       case 0:
-        return 'assets/image 2.png';
+        return 'assets/carousal1.png';
       case 1:
-        return 'assets/image 2.png';
+        return 'assets/carousal2.png';
       case 2:
-        return 'assets/image 2.png';
-      case 3:
-        return 'assets/image 2.png';
-      case 4:
-        return 'assets/image 2.png';
+        return 'assets/carousal3.png';
       default:
         return '';
     }
   }
 }
 void _openWhatsApp() async {
-  final Uri whatsappUrl = Uri.parse('whatsapp://send?phone=917358732901'); // Replace PHONE_NUMBER with the phone number you want to message
+  final Uri whatsappUrl = Uri.parse('whatsapp://send?phone=919443770935'); // Replace PHONE_NUMBER with the phone number you want to message
   try {
     await launch(whatsappUrl.toString());
   } catch (e) {
     print('Error launching WhatsApp: $e');
   }
 }
-
-

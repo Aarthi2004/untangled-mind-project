@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:medicalp/a_admineditprofile.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:permission_handler/permission_handler.dart'; // Import the permission handler package
 import 'package:medicalp/common.dart';
+import 'a_admineditprofile.dart';
 
 class A_adminprofile extends StatefulWidget {
   const A_adminprofile({Key? key}) : super(key: key);
+
   @override
   State<A_adminprofile> createState() => _A_adminprofileState();
 }
@@ -18,6 +23,8 @@ class _A_adminprofileState extends State<A_adminprofile> {
   String? phone;
   String? institution;
   String? designation;
+
+  bool _isDownloading = false; // To show loading indicator during download
 
   @override
   void initState() {
@@ -59,6 +66,75 @@ class _A_adminprofileState extends State<A_adminprofile> {
     }
   }
 
+  Future<void> downloadCSV(BuildContext context) async {
+    setState(() {
+      _isDownloading = true;
+    });
+
+    try {
+      final response = await http.get(Uri.parse(downloaddetails)); // Updated URL assignment
+      if (response.statusCode == 200) {
+        // Allow user to pick a directory
+        String? directoryPath = await FilePicker.platform.getDirectoryPath();
+        if (directoryPath == null) {
+          Fluttertoast.showToast(
+            msg: 'No Directory Selected',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+          );
+          return;
+        }
+
+        // Generate a unique filename
+        String fileName = 'patient_details_${DateTime.now().millisecondsSinceEpoch}.csv';
+        String filePath = '$directoryPath/$fileName';
+        File file = File(filePath);
+
+        // Ensure a unique filename by checking if the file exists
+        int counter = 1;
+        while (await file.exists()) {
+          fileName = 'patient_details_${DateTime.now().millisecondsSinceEpoch}_$counter.csv';
+          filePath = '$directoryPath/$fileName';
+          file = File(filePath);
+          counter++;
+        }
+
+        // Write the CSV file to the selected directory
+        await file.writeAsBytes(response.bodyBytes);
+        print('CSV saved at: $filePath');
+
+        // Notify user of success
+        Fluttertoast.showToast(
+          msg: 'Saved Successfully',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+        );
+      } else {
+        Fluttertoast.showToast(
+          msg: 'Error Downloading CSV',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+        );
+      }
+    } catch (e) {
+      print('Error occurred: $e');
+      Fluttertoast.showToast(
+        msg: 'An error occurred',
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 1,
+      );
+    } finally {
+      setState(() {
+        _isDownloading = false;
+      });
+    }
+  }
+
+
   void updateUserDetails(String newName, String newPhone, String newEmail, String newInstitution, String newDesignation) {
     setState(() {
       name = newName;
@@ -67,6 +143,33 @@ class _A_adminprofileState extends State<A_adminprofile> {
       institution = newInstitution;
       designation = newDesignation;
     });
+  }
+
+  void _showDownloadDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Download'),
+          content: Text('Do you want to download the profile data?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                downloadCSV(context); // Call the download function
+              },
+              child: Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -91,6 +194,10 @@ class _A_adminprofileState extends State<A_adminprofile> {
         ),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: Icon(Icons.download),
+            onPressed: _showDownloadDialog, // Show the download confirmation dialog
+          ),
           IconButton(
             icon: Icon(
               Icons.logout,
@@ -137,15 +244,17 @@ class _A_adminprofileState extends State<A_adminprofile> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => A_admineditprofile(
-                      userId: userId ?? '',
-                      name: name ?? '',
-                      phoneNumber: phone ?? '',
-                      email: email ?? '',
-                      institution: institution ?? '',
-                      designation: designation ?? '',
-                      onSave: updateUserDetails,
-                    )),
+                    MaterialPageRoute(
+                      builder: (context) => A_admineditprofile(
+                        userId: userId ?? '',
+                        name: name ?? '',
+                        phoneNumber: phone ?? '',
+                        email: email ?? '',
+                        institution: institution ?? '',
+                        designation: designation ?? '',
+                        onSave: updateUserDetails,
+                      ),
+                    ),
                   );
                 },
                 child: Text(
